@@ -6,7 +6,6 @@ import dotenv
 
 logger = logging.getLogger(__name__)
 
-from modules.gemini_tts import generate_and_play
 from debug.cohereFlow import cohereFlow
 from modules.camera import CameraManager, select_camera
 from modules.listen import list_microphone_names, listen_for_snapshot
