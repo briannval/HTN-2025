@@ -137,18 +137,23 @@ class ESP32Server:
 
         except Exception as e:
             print(f"[ERROR] An error occurred: {e}")
-        finally:
-            print(f"[CONNECTION CLOSED] {self.addr}")
             self.close()
 
     def close(self):
-        self.conn.close()
-        self.rfile.close()
-        self.wfile.close()
+        if self.conn:
+            self.conn.close()
+        if self.rfile:
+            self.rfile.close()
+        if self.wfile:
+            self.wfile.close()
 
 
 if __name__ == "__main__":
     s = ESP32Server()
     s.start()
-    s.request_frame()
+    while True:
+        i = input()
+        if i == 's':
+            break
+        s.request_frame()
     s.close()
