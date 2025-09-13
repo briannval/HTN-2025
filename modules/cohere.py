@@ -35,7 +35,7 @@ class CohereImageAnalyzer:
 5. Activities or actions taking place
 6. The overall setting or environment
 
-Be descriptive and specific, but also very concise, focusing on visual details that would help someone who cannot see understand what's happening in the image."""
+Be descriptive and specific, but also very concise, keeping at most 30 words, focusing on visual details that would help someone who cannot see understand what's happening in the image."""
 
             response = self.client.chat(
                 model=self.model,
