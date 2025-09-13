@@ -10,3 +10,5 @@ def test_pi_camera():
 
     camera_manager.stop_camera()
     print("Pi camera test completed successfully")
+
+test_pi_camera()
