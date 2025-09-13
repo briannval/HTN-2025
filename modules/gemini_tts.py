@@ -1,25 +1,15 @@
-# To run this code you need to install the following dependencies:
-# pip install google-genai
-
 import mimetypes
 import os
 import struct
 import logging
-from google import genai
 from google.genai import types
 from playsound import playsound
-import dotenv
 import pyaudio
 import wave
 import io
+import time
 
 logger = logging.getLogger(__name__)
-
-dotenv.load_dotenv()
-
-import pyaudio
-import wave
-import io
 
 
 def play_audio_data(audio_data: bytes, sample_rate: int, bits_per_sample: int):
@@ -27,13 +17,6 @@ def play_audio_data(audio_data: bytes, sample_rate: int, bits_per_sample: int):
 
     # Calculate parameters
     channels = 1
-    format_map = {
-        8: pyaudio.paInt8,
-        16: pyaudio.paInt16,
-        24: pyaudio.paInt24,
-        32: pyaudio.paInt32
-    }
-    audio_format = format_map.get(bits_per_sample, pyaudio.paInt16)
 
     # Create an in-memory wave file
     wav_buffer = io.BytesIO()
@@ -62,6 +45,8 @@ def play_audio_data(audio_data: bytes, sample_rate: int, bits_per_sample: int):
 
     p.terminate()
 
+
+# Save to wav file
 def save_binary_file(file_name, data):
     output_path = f"output/{file_name}"
     os.makedirs("output", exist_ok=True)
@@ -79,10 +64,8 @@ def save_binary_file(file_name, data):
             logger.error(f"Error playing audio: {e}")
 
 
-def generate_and_play(input_text):
-    client = genai.Client(
-        api_key=os.getenv("GEMINI_API_KEY")
-    )
+def generate_and_play(client, input_text):
+    generation_start_time = time.time()
 
     model = "gemini-2.5-flash-preview-tts"
     contents = [
@@ -113,6 +96,8 @@ def generate_and_play(input_text):
             contents=contents,
             config=generate_content_config,
     ):
+        print("Generation time: %.2f seconds" % (time.time() - generation_start_time))
+        processing_start_time = time.time()
         if (
                 chunk.candidates is None
                 or chunk.candidates[0].content is None
@@ -133,11 +118,14 @@ def generate_and_play(input_text):
 
             parameters = parse_audio_mime_type(inline_data.mime_type)
 
+            print("Processing time: %.2f seconds" % (time.time() - processing_start_time))
+            playback_start_time = time.time()
             if inline_data.mime_type.startswith('audio/L'):
                 wav_data = convert_to_wav(data_buffer, inline_data.mime_type)
                 play_audio_data(wav_data[44:], parameters['rate'], parameters['bits_per_sample'])  # Skip WAV header
             else:
                 play_audio_data(data_buffer, parameters['rate'], parameters['bits_per_sample'])
+            print("Playback time: %.2f seconds" % (time.time() - playback_start_time))
         else:
             logger.info(chunk.text)
 
@@ -217,6 +205,3 @@ def parse_audio_mime_type(mime_type: str) -> dict[str, int | None]:
 
     return {"bits_per_sample": bits_per_sample, "rate": rate}
 
-
-if __name__ == "__main__":
-    generate_and_play()
