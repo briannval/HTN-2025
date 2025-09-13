@@ -1,0 +1,5 @@
+opencv-python
+speechrecognition
+pyttsx3
+cohere
+cv2-enumerate-cameras
