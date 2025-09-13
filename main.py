@@ -1,6 +1,6 @@
 import argparse
-import os
 import logging
+import os
 
 import dotenv
 
@@ -21,6 +21,7 @@ if __name__ == "__main__":
     dotenv.load_dotenv()
     args = parse_args()
 
+    """
     logger.info("Available microphones:")
     list_microphone_names()
 
@@ -28,6 +29,7 @@ if __name__ == "__main__":
     if camera_index is None:
         logger.error("No camera selected. Exiting.")
         exit()
+    """
 
     cohere_api_key = os.getenv("COHERE_API_KEY")
     if not cohere_api_key:
@@ -39,17 +41,20 @@ if __name__ == "__main__":
     else:
         logger.info("Cohere API key found. Image analysis will be available.")
 
+    """
     camera_manager = CameraManager(camera_index, cohere_api_key=cohere_api_key)
     if not camera_manager.start_camera():
         logger.error("Failed to start camera. Exiting.")
         exit()
+    """
 
     try:
+        cohereFlow()
+        """
         if args.DEBUG_COHERE:
             cohereFlow(camera_manager)
         else:
-            listen_for_snapshot(camera_manager)
+            listen_for_snapshot(camera_manager)  # TODO
+        """
     except KeyboardInterrupt:
         logger.info("\nShutting down...")
-    finally:
-        camera_manager.stop_camera()

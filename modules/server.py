@@ -10,8 +10,8 @@ def request(conn, addr):
 
     # Wrap the socket in file-like objects for easier, buffered I/O
     # 'rb' for reading binary, 'wb' for writing binary
-    rfile = conn.makefile('rb')
-    wfile = conn.makefile('wb')
+    rfile = conn.makefile("rb")
+    wfile = conn.makefile("wb")
 
     try:
         # Main loop to continuously request frames
@@ -19,7 +19,7 @@ def request(conn, addr):
             print("\n-------------------------")
             # 1. Send the request for a frame
             print("Requesting a new frame from ESP32...")
-            wfile.write(b'GET_FRAME\n')
+            wfile.write(b"GET_FRAME\n")
             wfile.flush()  # Ensure the request is sent immediately
 
             # 2. Read the size header line from the client
@@ -29,7 +29,7 @@ def request(conn, addr):
                 print("Client disconnected.")
                 break
 
-            size_line = size_line.strip().decode('utf-8')
+            size_line = size_line.strip().decode("utf-8")
             print(f"Received header: '{size_line}'")
 
             # 3. Parse the size from the header
@@ -68,7 +68,7 @@ def request(conn, addr):
 
 
 class ESP32Server:
-    def __init__(self, host = "0.0.0.0", port = 9000):
+    def __init__(self, host="0.0.0.0", port=9000):
         self.host = host
         self.port = port
         self.conn = None
@@ -86,8 +86,8 @@ class ESP32Server:
             self.conn, self.addr = server.accept()
             print(f"[NEW CLIENT] Connected by {self.addr}")
 
-            self.rfile = self.conn.makefile('rb')
-            self.wfile = self.conn.makefile('wb')
+            self.rfile = self.conn.makefile("rb")
+            self.wfile = self.conn.makefile("wb")
 
     def request_frame(self):
         """Handles a single, long-lasting client connection."""
@@ -99,7 +99,7 @@ class ESP32Server:
             print("\n-------------------------")
             # 1. Send the request for a frame
             print("Requesting a new frame from ESP32...")
-            self.wfile.write(b'GET_FRAME\n')
+            self.wfile.write(b"GET_FRAME\n")
             self.wfile.flush()  # Ensure the request is sent immediately
 
             # 2. Read the size header line from the client
@@ -109,7 +109,7 @@ class ESP32Server:
                 print("Client disconnected.")
                 raise Exception("Client disconnected.")
 
-            size_line = size_line.strip().decode('utf-8')
+            size_line = size_line.strip().decode("utf-8")
             print(f"Received header: '{size_line}'")
 
             # 3. Parse the size from the header
@@ -153,7 +153,7 @@ if __name__ == "__main__":
     s.start()
     while True:
         i = input()
-        if i == 's':
+        if i == "s":
             break
         s.request_frame()
     s.close()
