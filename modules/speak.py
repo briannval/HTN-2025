@@ -1,5 +1,6 @@
 import pyttsx3
-from gemini_tts import generate_and_play
+
+from modules.gemini_tts import generate_and_play
 
 
 def speak(text):

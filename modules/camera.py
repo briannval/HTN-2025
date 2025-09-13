@@ -61,6 +61,7 @@ class CameraManager:
 
         ret, frame = self.cap.read()
         if not ret:
+            print(e.message)
             print("Error: Could not capture frame from camera")
             return None
 

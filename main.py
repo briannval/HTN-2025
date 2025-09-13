@@ -1,7 +1,10 @@
 import argparse
 import os
+import logging
 
 import dotenv
+
+logger = logging.getLogger(__name__)
 
 from modules.gemini_tts import generate_and_play
 from debug.cohereFlow import cohereFlow
@@ -19,27 +22,27 @@ if __name__ == "__main__":
     dotenv.load_dotenv()
     args = parse_args()
 
-    print("Available microphones:")
+    logger.info("Available microphones:")
     list_microphone_names()
 
     camera_index = select_camera()
     if camera_index is None:
-        print("No camera selected. Exiting.")
+        logger.error("No camera selected. Exiting.")
         exit()
 
     cohere_api_key = os.getenv("COHERE_API_KEY")
     if not cohere_api_key:
-        print(
+        logger.warning(
             "Warning: COHERE_API_KEY environment variable not set. Image analysis will not be available."
         )
-        print("To enable image analysis, set your Cohere API key:")
-        print("export COHERE_API_KEY='your_api_key_here'")
+        logger.info("To enable image analysis, set your Cohere API key:")
+        logger.info("export COHERE_API_KEY='your_api_key_here'")
     else:
-        print("Cohere API key found. Image analysis will be available.")
+        logger.info("Cohere API key found. Image analysis will be available.")
 
     camera_manager = CameraManager(camera_index, cohere_api_key=cohere_api_key)
     if not camera_manager.start_camera():
-        print("Failed to start camera. Exiting.")
+        logger.error("Failed to start camera. Exiting.")
         exit()
 
     try:
@@ -48,6 +51,6 @@ if __name__ == "__main__":
         else:
             listen_for_snapshot(camera_manager)
     except KeyboardInterrupt:
-        print("\nShutting down...")
+        logger.info("\nShutting down...")
     finally:
         camera_manager.stop_camera()
