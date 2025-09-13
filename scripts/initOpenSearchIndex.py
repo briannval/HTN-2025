@@ -24,11 +24,16 @@ if __name__ == "__main__":
 
     index_name = "my-index"
 
+    # Delete index if it exists
+    if client.indices.exists(index=index_name):
+        print(f"Deleting existing index: {index_name}")
+        client.indices.delete(index=index_name)
+
     index_body = {
         "settings": {"index": {"knn": True}},
         "mappings": {
             "properties": {
-                "embedding": {"type": "knn_vector", "dimension": 4},
+                "embedding": {"type": "knn_vector", "dimension": 1024},
                 "dynamodb_pk": {"type": "keyword"},
                 "created_at": {"type": "date"},
                 "description": {"type": "text"},
@@ -38,4 +43,6 @@ if __name__ == "__main__":
         },
     }
 
-    client.indices.create(index=index_name, body=index_body, ignore=400)
+    print(f"Creating index: {index_name}")
+    client.indices.create(index=index_name, body=index_body)
+    print("Index created successfully")

@@ -10,14 +10,11 @@ bedrock = boto3.client("bedrock-runtime")
 
 aws_access_key = os.getenv("AWS_ACCESS_KEY_ID")
 aws_secret_key = os.getenv("AWS_SECRET_ACCESS_KEY")
-aws_session_token = os.getenv("AWS_SESSION_TOKEN")
-region = os.getenv("AWS_REGION")
+region = "us-east-2"
 host = os.getenv("OPENSEARCH_HOST")
-index_name = os.getenv("OPENSEARCH_INDEX", "my-index")
+index_name = "hack-the-north"
 
-awsauth = AWS4Auth(
-    aws_access_key, aws_secret_key, region, "es", session_token=aws_session_token
-)
+awsauth = AWS4Auth(aws_access_key, aws_secret_key, region, "es")
 
 os_client = OpenSearch(
     hosts=[{"host": host, "port": 443}],
@@ -43,12 +40,18 @@ def lambda_handler(event, context):
     for record in event["Records"]:
         dynamodb_record = record["dynamodb"]["NewImage"]
         pk = dynamodb_record["PK"]["S"]
-        embedding = generate_embedding(dynamodb_record["description"]["S"])
+        description = dynamodb_record["description"]["S"]
+        time = dynamodb_record["time"]["S"]
+        location = dynamodb_record["location"]["S"]
+        embedding = generate_embedding(description)
 
         doc_body = {
             "dynamodb_pk": pk,
             "embedding": embedding,
             "created_at": datetime.utcnow().isoformat(),
+            "description": description,
+            "time": time,
+            "location": location,
         }
 
         os_client.index(index=index_name, id=pk, body=doc_body)
