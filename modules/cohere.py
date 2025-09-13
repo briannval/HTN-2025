@@ -4,6 +4,8 @@ from typing import Optional
 
 import cohere
 
+AYA_VISION_MODEL = "c4ai-aya-vision-32b"
+
 
 class CohereImageAnalyzer:
     def __init__(self, api_key: Optional[str] = None):
@@ -13,12 +15,13 @@ class CohereImageAnalyzer:
                 "Cohere API key is required. Set COHERE_API_KEY environment variable or pass it directly."
             )
 
-        self.client = cohere.Client(self.api_key)
-        self.model = "command-a-vision-07-2025"
+        self.client = cohere.ClientV2(self.api_key)
+        self.model = AYA_VISION_MODEL
 
     def encode_image_to_base64(self, image_path: str) -> str:
-        with open(image_path, "rb") as image_file:
-            return base64.b64encode(image_file.read()).decode("utf-8")
+        with open(image_path, "rb") as img_file:
+            base64_image_url = f"data:image/jpeg;base64,{base64.b64encode(img_file.read()).decode('utf-8')}"
+            return base64_image_url
 
     def describe_image_for_blind_person(self, image_path: str) -> str:
         try:
@@ -35,14 +38,19 @@ class CohereImageAnalyzer:
 Be descriptive and specific, but also very concise, focusing on visual details that would help someone who cannot see understand what's happening in the image."""
 
             response = self.client.chat(
-                message=prompt,
                 model=self.model,
-                documents=[
-                    {"id": "image", "content": image_base64, "mime_type": "image/jpeg"}
+                messages=[
+                    {
+                        "role": "user",
+                        "content": [
+                            {"type": "text", "text": prompt},
+                            {"type": "image_url", "image_url": {"url": image_base64}},
+                        ],
+                    }
                 ],
             )
 
-            return response.text
+            return response.message.content[0].text
 
         except Exception as e:
             return f"Error analyzing image: {str(e)}"
