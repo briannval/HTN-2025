@@ -1,6 +1,6 @@
 import pyttsx3
 
-from modules.gemini_tts import generate_and_play
+# from modules.gemini_tts import generate_and_play
 
 
 def speak(text):
@@ -9,5 +9,5 @@ def speak(text):
     engine.runAndWait()
 
 
-def speak_with_gemini(text):
-    generate_and_play(text)
+# def speak_with_gemini(text):
+#     generate_and_play(text)
