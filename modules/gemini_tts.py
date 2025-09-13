@@ -1,21 +1,66 @@
 # To run this code you need to install the following dependencies:
 # pip install google-genai
 
-import base64
 import mimetypes
 import os
-import re
 import struct
 import logging
 from google import genai
 from google.genai import types
 from playsound import playsound
 import dotenv
+import pyaudio
+import wave
+import io
 
 logger = logging.getLogger(__name__)
 
-
 dotenv.load_dotenv()
+
+import pyaudio
+import wave
+import io
+
+
+def play_audio_data(audio_data: bytes, sample_rate: int, bits_per_sample: int):
+    p = pyaudio.PyAudio()
+
+    # Calculate parameters
+    channels = 1
+    format_map = {
+        8: pyaudio.paInt8,
+        16: pyaudio.paInt16,
+        24: pyaudio.paInt24,
+        32: pyaudio.paInt32
+    }
+    audio_format = format_map.get(bits_per_sample, pyaudio.paInt16)
+
+    # Create an in-memory wave file
+    wav_buffer = io.BytesIO()
+    with wave.open(wav_buffer, 'wb') as wav_file:
+        wav_file.setnchannels(channels)
+        wav_file.setsampwidth(bits_per_sample // 8)
+        wav_file.setframerate(sample_rate)
+        wav_file.writeframes(audio_data)
+
+    # Read the wave file for playback
+    wav_buffer.seek(0)
+    with wave.open(wav_buffer, 'rb') as wav_file:
+        stream = p.open(format=p.get_format_from_width(wav_file.getsampwidth()),
+                        channels=wav_file.getnchannels(),
+                        rate=wav_file.getframerate(),
+                        output=True)
+
+        chunk_size = 1024
+        data = wav_file.readframes(chunk_size)
+        while data:
+            stream.write(data)
+            data = wav_file.readframes(chunk_size)
+
+        stream.stop_stream()
+        stream.close()
+
+    p.terminate()
 
 def save_binary_file(file_name, data):
     output_path = f"output/{file_name}"
@@ -59,33 +104,43 @@ def generate_and_play(input_text):
                     voice_name="Orus"
                 )
             )
-        ),
+        )
     )
 
     file_index = 0
     for chunk in client.models.generate_content_stream(
-        model=model,
-        contents=contents,
-        config=generate_content_config,
+            model=model,
+            contents=contents,
+            config=generate_content_config,
     ):
         if (
-            chunk.candidates is None
-            or chunk.candidates[0].content is None
-            or chunk.candidates[0].content.parts is None
+                chunk.candidates is None
+                or chunk.candidates[0].content is None
+                or chunk.candidates[0].content.parts is None
         ):
             continue
         if chunk.candidates[0].content.parts[0].inline_data and chunk.candidates[0].content.parts[0].inline_data.data:
-            file_name = f"test_{file_index}"
+            # file_name = f"test_{file_index}"
             file_index += 1
             inline_data = chunk.candidates[0].content.parts[0].inline_data
             data_buffer = inline_data.data
-            file_extension = mimetypes.guess_extension(inline_data.mime_type)
-            if file_extension is None:
-                file_extension = ".wav"
-                data_buffer = convert_to_wav(inline_data.data, inline_data.mime_type)
-            save_binary_file(f"{file_name}{file_extension}", data_buffer)
+
+            # file_extension = mimetypes.guess_extension(inline_data.mime_type)
+            # if file_extension is None:
+            #     file_extension = ".wav"
+            #     data_buffer = convert_to_wav(inline_data.data, inline_data.mime_type)
+            # save_binary_file(f"{file_name}{file_extension}", data_buffer)
+
+            parameters = parse_audio_mime_type(inline_data.mime_type)
+
+            if inline_data.mime_type.startswith('audio/L'):
+                wav_data = convert_to_wav(data_buffer, inline_data.mime_type)
+                play_audio_data(wav_data[44:], parameters['rate'], parameters['bits_per_sample'])  # Skip WAV header
+            else:
+                play_audio_data(data_buffer, parameters['rate'], parameters['bits_per_sample'])
         else:
             logger.info(chunk.text)
+
 
 def convert_to_wav(audio_data: bytes, mime_type: str) -> bytes:
     """Generates a WAV file header for the given audio data and parameters.
@@ -111,21 +166,22 @@ def convert_to_wav(audio_data: bytes, mime_type: str) -> bytes:
 
     header = struct.pack(
         "<4sI4s4sIHHIIHH4sI",
-        b"RIFF",          # ChunkID
-        chunk_size,       # ChunkSize (total file size - 8 bytes)
-        b"WAVE",          # Format
-        b"fmt ",          # Subchunk1ID
-        16,               # Subchunk1Size (16 for PCM)
-        1,                # AudioFormat (1 for PCM)
-        num_channels,     # NumChannels
-        sample_rate,      # SampleRate
-        byte_rate,        # ByteRate
-        block_align,      # BlockAlign
+        b"RIFF",  # ChunkID
+        chunk_size,  # ChunkSize (total file size - 8 bytes)
+        b"WAVE",  # Format
+        b"fmt ",  # Subchunk1ID
+        16,  # Subchunk1Size (16 for PCM)
+        1,  # AudioFormat (1 for PCM)
+        num_channels,  # NumChannels
+        sample_rate,  # SampleRate
+        byte_rate,  # ByteRate
+        block_align,  # BlockAlign
         bits_per_sample,  # BitsPerSample
-        b"data",          # Subchunk2ID
-        data_size         # Subchunk2Size (size of audio data)
+        b"data",  # Subchunk2ID
+        data_size  # Subchunk2Size (size of audio data)
     )
     return header + audio_data
+
 
 def parse_audio_mime_type(mime_type: str) -> dict[str, int | None]:
     """Parses bits per sample and rate from an audio MIME type string.
@@ -144,7 +200,7 @@ def parse_audio_mime_type(mime_type: str) -> dict[str, int | None]:
 
     # Extract rate from parameters
     parts = mime_type.split(";")
-    for param in parts: # Skip the main type part
+    for param in parts:  # Skip the main type part
         param = param.strip()
         if param.lower().startswith("rate="):
             try:
@@ -152,12 +208,12 @@ def parse_audio_mime_type(mime_type: str) -> dict[str, int | None]:
                 rate = int(rate_str)
             except (ValueError, IndexError):
                 # Handle cases like "rate=" with no value or non-integer value
-                pass # Keep rate as default
+                pass  # Keep rate as default
         elif param.startswith("audio/L"):
             try:
                 bits_per_sample = int(param.split("L", 1)[1])
             except (ValueError, IndexError):
-                pass # Keep bits_per_sample as default if conversion fails
+                pass  # Keep bits_per_sample as default if conversion fails
 
     return {"bits_per_sample": bits_per_sample, "rate": rate}
 
