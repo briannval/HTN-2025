@@ -11,6 +11,46 @@ def list_microphone_names():
     logger.info(sr.Microphone.list_microphone_names())
 
 
+def listen_for_snapshot_pi(camera_manager):
+    recognizer = sr.Recognizer()
+    mic = sr.Microphone()
+
+    with mic as source:
+        logger.info("Adjusting for ambient noise... Please wait.")
+        recognizer.adjust_for_ambient_noise(source)
+
+    logger.info("Listening for the word 'snapshot'...")
+
+    while True:
+        with mic as source:
+            audio = recognizer.listen(source)
+
+        try:
+            command = recognizer.recognize_google(audio).lower()
+            logger.info(f"Heard: {command}")
+
+            if "snapshot" in command:
+                logger.info("Taking photo")
+                speak("Taking photo")
+
+                if camera_manager.take_photo():
+                    photo_path, description = camera_manager.analyze_photo()
+
+                    if description:
+                        speak("Here's what I see in the image:")
+                        speak(description)
+                    else:
+                        speak("Photo analysis failed")
+                else:
+                    speak("Failed to take photo")
+
+        except sr.UnknownValueError:
+            pass
+        except sr.RequestError as e:
+            logger.error(f"Could not request results; {e}")
+        except sr.WaitTimeoutError:
+            pass
+
 def listen_for_snapshot(camera_manager):
     recognizer = sr.Recognizer()
     mic = sr.Microphone()
