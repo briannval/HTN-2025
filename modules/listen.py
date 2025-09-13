@@ -1,11 +1,14 @@
 import cv2
 import speech_recognition as sr
+import logging
 
 from modules.speak import speak
 
+logger = logging.getLogger(__name__)
+
 
 def list_microphone_names():
-    print(sr.Microphone.list_microphone_names())
+    logger.info(sr.Microphone.list_microphone_names())
 
 
 def listen_for_snapshot(camera_manager):
@@ -13,10 +16,10 @@ def listen_for_snapshot(camera_manager):
     mic = sr.Microphone()
 
     with mic as source:
-        print("Adjusting for ambient noise... Please wait.")
+        logger.info("Adjusting for ambient noise... Please wait.")
         recognizer.adjust_for_ambient_noise(source)
 
-    print("Listening for the word 'snapshot'...")
+    logger.info("Listening for the word 'snapshot'...")
 
     while True:
         with mic as source:
@@ -24,10 +27,10 @@ def listen_for_snapshot(camera_manager):
 
         try:
             command = recognizer.recognize_google(audio).lower()
-            print(f"Heard: {command}")
+            logger.info(f"Heard: {command}")
 
             if "snapshot" in command:
-                print("Taking snapshot")
+                logger.info("Taking snapshot")
                 speak("Taking snapshot")
                 result = camera_manager.take_snapshot()
 
@@ -37,7 +40,7 @@ def listen_for_snapshot(camera_manager):
                         if photo_path:
                             speak("Photo saved successfully")
                             if description:
-                                print("Speaking image description...")
+                                logger.info("Speaking image description...")
                                 speak("Here's what I see in the image:")
                                 speak(description)
                             else:
@@ -56,6 +59,6 @@ def listen_for_snapshot(camera_manager):
         except sr.UnknownValueError:
             pass
         except sr.RequestError as e:
-            print(f"Could not request results; {e}")
+            logger.error(f"Could not request results; {e}")
         except sr.WaitTimeoutError:
             pass

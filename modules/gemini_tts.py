@@ -6,10 +6,13 @@ import mimetypes
 import os
 import re
 import struct
+import logging
 from google import genai
 from google.genai import types
 from playsound import playsound
 import dotenv
+
+logger = logging.getLogger(__name__)
 
 
 dotenv.load_dotenv()
@@ -21,14 +24,14 @@ def save_binary_file(file_name, data):
     with open(output_path, "wb") as f:
         f.write(data)
 
-    print(f"File saved to: {output_path}")
+    logger.info(f"File saved to: {output_path}")
 
     # Play the audio file if it's a WAV file
     if file_name.endswith('.wav'):
         try:
             playsound(output_path)
         except Exception as e:
-            print(f"Error playing audio: {e}")
+            logger.error(f"Error playing audio: {e}")
 
 
 def generate_and_play(input_text):
@@ -82,7 +85,7 @@ def generate_and_play(input_text):
                 data_buffer = convert_to_wav(inline_data.data, inline_data.mime_type)
             save_binary_file(f"{file_name}{file_extension}", data_buffer)
         else:
-            print(chunk.text)
+            logger.info(chunk.text)
 
 def convert_to_wav(audio_data: bytes, mime_type: str) -> bytes:
     """Generates a WAV file header for the given audio data and parameters.
