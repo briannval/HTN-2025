@@ -1,9 +1,23 @@
+import argparse
 import os
 
+import dotenv
+
+from debug.cohereFlow import cohereFlow
 from modules.camera import CameraManager, select_camera
 from modules.listen import list_microphone_names, listen_for_snapshot
 
+
+def parse_args():
+    parser = argparse.ArgumentParser(description="")
+    parser.add_argument("--DEBUG_COHERE", action="store_true")
+    return parser.parse_args()
+
+
 if __name__ == "__main__":
+    dotenv.load_dotenv()
+    args = parse_args()
+
     print("Available microphones:")
     list_microphone_names()
 
@@ -28,7 +42,10 @@ if __name__ == "__main__":
         exit()
 
     try:
-        listen_for_snapshot(camera_manager)
+        if args.DEBUG_COHERE:
+            cohereFlow(camera_manager)
+        else:
+            listen_for_snapshot(camera_manager)
     except KeyboardInterrupt:
         print("\nShutting down...")
     finally:
