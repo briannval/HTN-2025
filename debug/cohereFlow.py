@@ -1,4 +1,4 @@
-from modules.cohere import CohereImageAnalyzer
+from modules.cohere_analyzer import CohereImageAnalyzer
 from modules.server import ESP32Server
 
 

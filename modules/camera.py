@@ -4,7 +4,7 @@ from datetime import datetime
 import cv2
 from cv2_enumerate_cameras import enumerate_cameras
 
-from modules.cohere import CohereImageAnalyzer
+from modules.cohere_analyzer import CohereImageAnalyzer
 
 
 class CameraManager:
