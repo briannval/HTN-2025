@@ -1,25 +1,37 @@
+#include "WiFi.h"
 #include "esp_camera.h"
-#include <WiFi.h>
 
-// ===========================
-// Select camera model in board_config.h
-// ===========================
-#include "board_config.h"
+//
+// --- PIN DEFINITIONS (for AI-THINKER board) ---
+//
+#define PWDN_GPIO_NUM     32
+#define RESET_GPIO_NUM    -1
+#define XCLK_GPIO_NUM      0
+#define SIOD_GPIO_NUM     26
+#define SIOC_GPIO_NUM     27
+#define Y9_GPIO_NUM       35
+#define Y8_GPIO_NUM       34
+#define Y7_GPIO_NUM       39
+#define Y6_GPIO_NUM       36
+#define Y5_GPIO_NUM       21
+#define Y4_GPIO_NUM       19
+#define Y3_GPIO_NUM       18
+#define Y2_GPIO_NUM        5
+#define VSYNC_GPIO_NUM    25
+#define HREF_GPIO_NUM     23
+#define PCLK_GPIO_NUM     22
 
-// ===========================
-// Enter your WiFi credentials
-// ===========================
-const char *ssid = "HackTheNorth";
-const char *password = "HTN2025!";
+//
+// --- CONFIGURATION ---
+//
+const char* ssid = "HackTheNorth";
+const char* password = "HTN2025!";
+const char* server_ip = "10.37.126.214"; // ❗️ IMPORTANT: CHANGE THIS to your PC's IP address
+const int server_port = 9000;
 
-void startCameraServer();
-void setupLedFlash();
+WiFiClient client;
 
-void setup() {
-  Serial.begin(115200);
-  Serial.setDebugOutput(true);
-  Serial.println();
-
+void setupCamera() {
   camera_config_t config;
   config.ledc_channel = LEDC_CHANNEL_0;
   config.ledc_timer = LEDC_TIMER_0;
@@ -41,90 +53,74 @@ void setup() {
   config.pin_reset = RESET_GPIO_NUM;
   config.xclk_freq_hz = 20000000;
   config.frame_size = FRAMESIZE_UXGA;
-  config.pixel_format = PIXFORMAT_JPEG;  // for streaming
-  // config.pixel_format = PIXFORMAT_RGB565; // for face detection/recognition
+  config.pixel_format = PIXFORMAT_JPEG;
   config.grab_mode = CAMERA_GRAB_WHEN_EMPTY;
   config.fb_location = CAMERA_FB_IN_PSRAM;
-  config.jpeg_quality = 12;
+  config.jpeg_quality = 50;
   config.fb_count = 1;
 
-  // if PSRAM IC present, init with UXGA resolution and higher JPEG quality
-  //                      for larger pre-allocated frame buffer.
-  if (config.pixel_format == PIXFORMAT_JPEG) {
-    if (psramFound()) {
-      config.jpeg_quality = 10;
-      config.fb_count = 2;
-      config.grab_mode = CAMERA_GRAB_LATEST;
-    } else {
-      // Limit the frame size when PSRAM is not available
-      config.frame_size = FRAMESIZE_SVGA;
-      config.fb_location = CAMERA_FB_IN_DRAM;
-    }
-  } else {
-    // Best option for face detection/recognition
-    config.frame_size = FRAMESIZE_240X240;
-#if CONFIG_IDF_TARGET_ESP32S3
-    config.fb_count = 2;
-#endif
-  }
-
-#if defined(CAMERA_MODEL_ESP_EYE)
-  pinMode(13, INPUT_PULLUP);
-  pinMode(14, INPUT_PULLUP);
-#endif
-
-  // camera init
-  esp_err_t err = esp_camera_init(&config);
-  if (err != ESP_OK) {
-    Serial.printf("Camera init failed with error 0x%x", err);
+  if (esp_camera_init(&config) != ESP_OK) {
+    Serial.println("Camera init failed!");
     return;
   }
+}
 
-  sensor_t *s = esp_camera_sensor_get();
-  // initial sensors are flipped vertically and colors are a bit saturated
-  if (s->id.PID == OV3660_PID) {
-    s->set_vflip(s, 1);        // flip it back
-    s->set_brightness(s, 1);   // up the brightness just a bit
-    s->set_saturation(s, -2);  // lower the saturation
-  }
-  // drop down frame size for higher initial frame rate
-  if (config.pixel_format == PIXFORMAT_JPEG) {
-    s->set_framesize(s, FRAMESIZE_QVGA);
-  }
-
-#if defined(CAMERA_MODEL_M5STACK_WIDE) || defined(CAMERA_MODEL_M5STACK_ESP32CAM)
-  s->set_vflip(s, 1);
-  s->set_hmirror(s, 1);
-#endif
-
-#if defined(CAMERA_MODEL_ESP32S3_EYE)
-  s->set_vflip(s, 1);
-#endif
-
-// Setup LED FLash if LED pin is defined in camera_pins.h
-#if defined(LED_GPIO_NUM)
-  setupLedFlash();
-#endif
-
+void setup() {
+  Serial.begin(115200);
+  
   WiFi.begin(ssid, password);
-  WiFi.setSleep(false);
-
-  Serial.print("WiFi connecting");
+  Serial.print("Connecting to WiFi...");
   while (WiFi.status() != WL_CONNECTED) {
     delay(500);
     Serial.print(".");
   }
-  Serial.println("");
-  Serial.println("WiFi connected");
+  Serial.println("\n✅ WiFi connected");
+  Serial.print("ESP32 IP Address: ");
+  Serial.println(WiFi.localIP());
 
-  startCameraServer();
-
-  Serial.print("Camera Ready! Use 'http://");
-  Serial.print(WiFi.localIP());
-  Serial.println("' to connect");
+  setupCamera();
 }
 
 void loop() {
-  // Do nothing. Everything is done in another task by the web server
-  delay(10000);
+  // If not connected, try to connect to the server
+  if (!client.connected()) {
+    Serial.printf("\nAttempting to connect to server %s:%d...", server_ip, server_port);
+    if (!client.connect(server_ip, server_port)) {
+      Serial.println("Connection failed. Retrying in 2 seconds...");
+      delay(2000);
+      return;
+    }
+    Serial.println("\n✅ Connected to server!");
+  }
+
+  // Check if the server has sent a command
+  if (client.available()) {
+    String cmd = client.readStringUntil('\n');
+    cmd.trim();
+    Serial.printf("Received command: '%s'\n", cmd.c_str());
+    camera_fb_t* fb = esp_camera_fb_get();
+
+    if (cmd == "GET_FRAME") {
+      if (!fb) {
+        Serial.println("Camera capture failed");
+        client.println("ERR Capture Failed");
+        return;
+      }
+      
+      // 1. Send the size header, followed by a newline
+      client.printf("SIZE %zu\n", fb->len);
+      Serial.printf("Sent header: SIZE %zu\n", fb->len);
+      
+      // 2. Send the raw image data
+      client.write(fb->buf, fb->len);
+      client.flush(); // Flush the buffer to make sure data is sent
+      Serial.printf("Sent %zu bytes of image data.\n", fb->len);
+      // We DO NOT close the connection here.
+      // The ESP32 is now ready for the next GET_FRAME command.
+    }
+
+    esp_camera_fb_return(fb);
+  }
+  
+  delay(10); // Small delay to yield to other tasks
 }
