@@ -1,21 +1,33 @@
 import logging
+import os
 from datetime import datetime
 from typing import Dict, List, Optional
 
 import boto3
 from botocore.exceptions import ClientError
+from dotenv import load_dotenv
+
+load_dotenv()
+
+AWS_ACCESS_KEY_ID = os.getenv("AWS_ACCESS_KEY_ID")
+AWS_SECRET_ACCESS_KEY = os.getenv("AWS_SECRET_ACCESS_KEY")
 
 logger = logging.getLogger(__name__)
 
 
 class DynamoDBInterface:
 
-    def __init__(self, table_name: str, region_name: str = "us-east-1"):
-        self.table_name = table_name
-        self.region_name = region_name
+    def __init__(self):
+        self.table_name = "hack_the_north"
+        self.region_name = "us-east-2"
 
-        self.dynamodb = boto3.resource("dynamodb", region_name=region_name)
-        self.table = self.dynamodb.Table(table_name)
+        self.dynamodb = boto3.resource(
+            "dynamodb",
+            region_name=self.region_name,
+            aws_access_key_id=AWS_ACCESS_KEY_ID,
+            aws_secret_access_key=AWS_SECRET_ACCESS_KEY,
+        )
+        self.table = self.dynamodb.Table(self.table_name)
 
     def add_entry(
         self, time: str, location: str, description: str, entry_id: Optional[str] = None
@@ -173,3 +185,11 @@ class DynamoDBInterface:
         except Exception as e:
             logger.error(f"Unexpected error creating table: {str(e)}")
             return False
+
+
+if __name__ == "__main__":
+    db = DynamoDBInterface()
+    time = datetime.now().isoformat()
+    location = "Toronto, ON"
+    description = "Test entry"
+    db.add_entry(time, location, description)
