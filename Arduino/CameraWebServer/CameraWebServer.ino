@@ -51,7 +51,7 @@ void setupCamera() {
   config.pin_sccb_scl = SIOC_GPIO_NUM;
   config.pin_pwdn = PWDN_GPIO_NUM;
   config.pin_reset = RESET_GPIO_NUM;
-  config.xclk_freq_hz = 20000000;
+  config.xclk_freq_hz = 10000000;
   config.frame_size = FRAMESIZE_UXGA;
   config.pixel_format = PIXFORMAT_JPEG;
   config.grab_mode = CAMERA_GRAB_WHEN_EMPTY;
@@ -87,7 +87,7 @@ void loop() {
     Serial.printf("\nAttempting to connect to server %s:%d...", server_ip, server_port);
     if (!client.connect(server_ip, server_port)) {
       Serial.println("Connection failed. Retrying in 2 seconds...");
-      delay(2000);
+      delay(500);
       return;
     }
     Serial.println("\n✅ Connected to server!");
@@ -112,7 +112,24 @@ void loop() {
       Serial.printf("Sent header: SIZE %zu\n", fb->len);
       
       // 2. Send the raw image data
-      client.write(fb->buf, fb->len);
+      // client.write(fb->buf, fb->len);
+
+      size_t to_send = fb->len;
+      uint8_t* buf_ptr = fb->buf;
+      const size_t CHUNK_SIZE = 1024;
+
+      while (to_send > 0) {
+        size_t chunk = (to_send > CHUNK_SIZE) ? CHUNK_SIZE : to_send;
+        size_t sent = client.write(buf_ptr, chunk);
+        if (sent == 0) {
+          Serial.println("Send failed, aborting frame.");
+          break;
+        }
+        buf_ptr += sent;
+        to_send -= sent;
+        delay(1); // yield to WiFi stack
+      }
+
       client.flush(); // Flush the buffer to make sure data is sent
       Serial.printf("Sent %zu bytes of image data.\n", fb->len);
       // We DO NOT close the connection here.
