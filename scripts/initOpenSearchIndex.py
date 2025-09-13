@@ -8,14 +8,11 @@ load_dotenv()  # Load .env file
 
 aws_access_key = os.getenv("AWS_ACCESS_KEY_ID")
 aws_secret_key = os.getenv("AWS_SECRET_ACCESS_KEY")
-aws_session_token = os.getenv("AWS_SESSION_TOKEN")
-region = os.getenv("AWS_REGION")
+region = "us-east-2"
 host = os.getenv("OPENSEARCH_HOST")
 
 if __name__ == "__main__":
-    awsauth = AWS4Auth(
-        aws_access_key, aws_secret_key, region, "es", session_token=aws_session_token
-    )
+    awsauth = AWS4Auth(aws_access_key, aws_secret_key, region, "es")
 
     client = OpenSearch(
         hosts=[{"host": host, "port": 443}],
@@ -34,6 +31,9 @@ if __name__ == "__main__":
                 "embedding": {"type": "knn_vector", "dimension": 4},
                 "dynamodb_pk": {"type": "keyword"},
                 "created_at": {"type": "date"},
+                "description": {"type": "text"},
+                "location": {"type": "text"},
+                "time": {"type": "date"},
             }
         },
     }
