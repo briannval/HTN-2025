@@ -1,5 +1,5 @@
 import os
-import logging
+import time
 
 import dotenv
 
@@ -21,6 +21,8 @@ def main():
     if not camera_manager.start_camera():
         print("Failed to start camera. Exiting.")
         exit()
+
+    time.sleep(2)
 
     print("Taking photo")
     if camera_manager.take_photo():

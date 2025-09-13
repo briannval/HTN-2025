@@ -19,7 +19,6 @@ class PiCameraManager:
 
             self.cam.start_preview(Preview.QTGL)
             self.cam.start()
-            time.sleep(0.5)
             return True
         except Exception as e:
             print(f"Error starting camera: {e}")
