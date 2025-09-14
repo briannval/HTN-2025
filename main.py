@@ -54,6 +54,8 @@ class Main:
 
     def ask(self, question):
         try:
+            speak("Thinking hard...")
+            speak("Processing...")
             answer = self.cohere_answer.generate_contextual_answer(
                 question,
                 self.opensearch_client.get_search_by_text_results_prompt(
