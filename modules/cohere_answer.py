@@ -57,9 +57,9 @@ Please provide a clear, concise answer based on the context provided. If the con
         self, query: str, context: List[Dict[str, Any]], system_prompt: str = None
     ) -> str:
         try:
-            context_text = self._format_context(context)
+            context_text = context
 
-            default_system = "You are a helpful assistant that helps a blind or visually impaired person answer questions based on provided context. These are description of images that the user requested to take, and which seems to be relevant to the question. Be accurate, concise, and helpful."
+            default_system = "You are a helpful assistant that helps a blind or visually impaired person answer questions based on provided context. These are description of images that the user requested to take, and which seems to be relevant to the question. Be accurate, concise, and helpful. Talk about what might spike a memory from a blind person's perspective, and include the time as well."
             system_message = system_prompt or default_system
 
             user_prompt = f"""Context Information:
@@ -68,15 +68,18 @@ Please provide a clear, concise answer based on the context provided. If the con
 
             response = self.client.chat(
                 model=self.model,
-                messages=[
-                    {"role": "system", "content": system_message},
-                    {"role": "user", "content": user_prompt},
+                message=user_prompt,
+                documents=[
+                    {
+                        "instructions": system_message,
+                        "reference": context_text,
+                    }
                 ],
                 temperature=0.3,
                 max_tokens=500,
             )
 
-            return response.message.content[0].text
+            return response.text
 
         except Exception as e:
             return f"Error generating contextual answer: {str(e)}"

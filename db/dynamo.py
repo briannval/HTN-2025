@@ -189,7 +189,52 @@ class DynamoDBInterface:
 
 if __name__ == "__main__":
     db = DynamoDBInterface()
-    time = datetime.now().isoformat()
-    location = "Jupiter, US"
-    description = "Test Vector >>>>>>>>>>>>>"
-    db.add_entry(time, location, description)
+    locations_descriptions = [
+        {
+            "location": "Toronto, ON",
+            "description": "In front of you is a large transit station platform with buses pulling in and out. To your left is a row of metal benches, and to your right you can hear a coffee kiosk with the sound of milk steaming.",
+        },
+        {
+            "location": "Vancouver, BC",
+            "description": "In front of you is the ocean, with gentle waves hitting the rocks. To your left is the seawall path where cyclists are passing quickly, and to your right you can feel the breeze blowing in from the water.",
+        },
+        {
+            "location": "Montreal, QC",
+            "description": "In front of you are rows of market stalls with voices calling out prices. To your left is a bakery stand with the smell of fresh bread, and to your right are baskets of ripe fruit being arranged.",
+        },
+        {
+            "location": "Calgary, AB",
+            "description": "In front of you is a wide intersection with cars rushing past. To your left is a pedestrian crossing signal making a clicking sound, and to your right you can hear people chatting while waiting to cross.",
+        },
+        {
+            "location": "Ottawa, ON",
+            "description": "In front of you is a tall exhibit wall with paintings. To your left is a quiet group listening to an audio guide, and to your right you can hear footsteps echoing across the polished floor.",
+        },
+        {
+            "location": "Halifax, NS",
+            "description": "In front of you is the harbor with a ferry preparing to leave. To your left are wooden planks underfoot that creak slightly, and to your right you can hear gulls circling above the water.",
+        },
+        {
+            "location": "Winnipeg, MB",
+            "description": "In front of you is the café counter where drinks are being made. To your left is a row of small tables where people are talking, and to your right the smell of roasted beans drifts strongly.",
+        },
+        {
+            "location": "Edmonton, AB",
+            "description": "In front of you are several store entrances with soft music playing. To your left is the sound of children laughing in the distance, and to your right is a perfume shop releasing a strong floral scent.",
+        },
+        {
+            "location": "Quebec City, QC",
+            "description": "In front of you is a narrow cobblestone street with people walking closely together. To your left is a bakery giving off the smell of pastries, and to your right a violinist is playing lively music.",
+        },
+        {
+            "location": "Victoria, BC",
+            "description": "In front of you is an open grassy field inside a park. To your left you hear birds chirping in the trees, and to your right children are laughing and running across the playground.",
+        },
+    ]
+
+    for i, obj in enumerate(locations_descriptions):
+        time = datetime.now().isoformat()
+        location = obj["location"]
+        description = obj["description"]
+        db.add_entry(time, location, description)
+        logger.info(f"Added entry {i + 1} of {len(locations_descriptions)}")
