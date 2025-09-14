@@ -3,7 +3,7 @@ import time
 from threading import Timer
 
 class Button:
-    def __init__(self, pin, click_callback=None, hold_callback=None, hold_time=1.0, bounce_time=200):
+    def __init__(self, pin, click_callback=None, hold_callback=None, hold_time=1.0, bounce_time=20):
         """
         Initialize button with callbacks for click and hold events.
         
@@ -27,7 +27,7 @@ class Button:
         
         # Setup GPIO
         GPIO.setmode(GPIO.BCM)
-        GPIO.setup(self.pin, GPIO.IN, pull_up_down=GPIO.PUD_UP)
+        GPIO.setup(self.pin, GPIO.IN)
         
         # Add event detection
         GPIO.add_event_detect(
@@ -39,42 +39,35 @@ class Button:
     
     def _button_state_changed(self, channel):
         print("button state changed")
-        if GPIO.input(self.pin) == GPIO.LOW:
-            # Button pressed
-            self._button_pressed()
-        else:
-            # Button released
-            self._button_released()
+        GPIO.remove_event_detect(self.pin)
+        try:
+            if GPIO.input(self.pin) == GPIO.LOW:
+                # Button pressed
+                self._button_pressed()
+            else:
+                # Button released
+                self._button_released()
+        finally:
+            GPIO.add_event_detect(
+                self.pin,
+                GPIO.BOTH,
+                callback=self._button_state_changed,
+                bouncetime=self.bounce_time
+            )
     
     def _button_pressed(self):
         print("button pressed")
         self.pressed_time = time.time()
-        self.hold_event_sent = False
-        
-        # Start hold timer
-        if self.hold_callback:
-            self.hold_timer = Timer(self.hold_time, self._hold_timeout)
-            self.hold_timer.start()
     
     def _button_released(self):
         print("button released")
-        # Cancel hold timer if it's running
-        if self.hold_timer:
-            self.hold_timer.cancel()
-            self.hold_timer = None
+        press_duration = time.time() - self.pressed_time
         
-        # If hold event wasn't sent and we have a click callback, trigger click
-        if not self.hold_event_sent and self.click_callback and self.pressed_time is not None:
-            press_duration = time.time() - self.pressed_time
+        if press_duration < self.hold_time:
             self.click_callback(press_duration)
-        
+        else:
+            self.hold_callback(press_duration)
         self.pressed_time = None
-        self.hold_event_sent = False
-    
-    def _hold_timeout(self):
-        if self.pressed_time is not None and self.hold_callback:
-            self.hold_event_sent = True
-            self.hold_callback(time.time() - self.pressed_time)
     
     def cleanup(self):
         """Clean up GPIO resources"""
