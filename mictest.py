@@ -31,4 +31,5 @@ def main():
 
     listen_for_snapshot_pi(camera_manager, cohere_analyzer)
 
+main()
 
