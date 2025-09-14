@@ -22,12 +22,10 @@ class Button:
         
         # Button state
         self.pressed_time = None
-        self.hold_event_sent = False
-        self.hold_timer = None
         
         # Setup GPIO
         GPIO.setmode(GPIO.BCM)
-        GPIO.setup(self.pin, GPIO.IN)
+        GPIO.setup(self.pin, GPIO.IN, pull_up_down=GPIO.PUD_UP)
         
         # Add event detection
         GPIO.add_event_detect(
@@ -38,10 +36,9 @@ class Button:
         )
     
     def _button_state_changed(self, channel):
-        print("button state changed")
         GPIO.remove_event_detect(self.pin)
         try:
-            if GPIO.input(self.pin) == GPIO.LOW:
+            if GPIO.input(self.pin) == GPIO.HIGH:
                 # Button pressed
                 self._button_pressed()
             else:
@@ -56,7 +53,6 @@ class Button:
             )
     
     def _button_pressed(self):
-        print("button pressed")
         self.pressed_time = time.time()
         self.hold_event_sent = False
         
@@ -66,11 +62,17 @@ class Button:
             self.hold_timer.start()
     
     def _button_released(self):
+<<<<<<< Updated upstream
         print("button released")
         # Cancel hold timer if it's running
         if self.hold_timer:
             self.hold_timer.cancel()
             self.hold_timer = None
+=======
+        if self.pressed_time == None:
+            return
+        press_duration = time.time() - self.pressed_time
+>>>>>>> Stashed changes
         
         # If hold event wasn't sent and we have a click callback, trigger click
         if not self.hold_event_sent and self.click_callback and self.pressed_time is not None:
