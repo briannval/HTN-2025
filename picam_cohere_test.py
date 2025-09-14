@@ -1,5 +1,6 @@
 import os
 import time
+import sys
 
 import dotenv
 
@@ -9,10 +10,15 @@ from modules.speak import speak
 
 
 def main():
+    try:
+        prompt_index = int(sys.argv[1]) if len(sys.argv) > 1 else 0
+    except ValueError:
+        prompt_index = 0
+
     dotenv.load_dotenv()
     cohere_api_key = os.getenv("COHERE_API_KEY")
     if cohere_api_key:
-        cohere_analyzer = CohereImageAnalyzer(cohere_api_key)
+        cohere_analyzer = CohereImageAnalyzer(cohere_api_key, prompt_index=prompt_index)
     else:
         print("COHERE_API_KEY environment variable not set. Exiting.")
         return

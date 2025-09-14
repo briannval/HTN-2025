@@ -1,6 +1,7 @@
 import base64
 import os
 from typing import Optional
+from prompt import cohere_prompt
 
 import cohere
 
@@ -8,7 +9,7 @@ AYA_VISION_MODEL = "c4ai-aya-vision-32b"
 
 
 class CohereImageAnalyzer:
-    def __init__(self, api_key: Optional[str] = None):
+    def __init__(self, api_key: Optional[str] = None, prompt_index: int = 0):
         self.api_key = api_key or os.getenv("COHERE_API_KEY")
         if not self.api_key:
             raise ValueError(
@@ -17,6 +18,7 @@ class CohereImageAnalyzer:
 
         self.client = cohere.ClientV2(self.api_key)
         self.model = AYA_VISION_MODEL
+        self.prompt_index = prompt_index
 
     def encode_image_to_base64(self, image_path: str) -> str:
         with open(image_path, "rb") as img_file:
@@ -27,15 +29,7 @@ class CohereImageAnalyzer:
         try:
             image_base64 = self.encode_image_to_base64(image_path)
 
-            prompt = """Please describe this image in detail as if you were describing it to a blind person. Include:
-1. The main objects and people in the scene
-2. Their positions and spatial relationships
-3. Colors, lighting, and mood
-4. Any text that appears in the image
-5. Activities or actions taking place
-6. The overall setting or environment
-
-Be descriptive and specific, but also very concise, keeping at most 30 words, focusing on visual details that would help someone who cannot see understand what's happening in the image."""
+            prompt = cohere_prompt(prompt_number)
 
             response = self.client.chat(
                 model=self.model,
