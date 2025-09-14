@@ -27,6 +27,22 @@ def cohere_prompt(index: int) -> str:
         5. Any text that appears in the image
 
         Be descriptive and specific, but also very concise, keeping at most 30 words, focusing on visual details that would help a visually impaired person understand what is happening in the image.
+        """,
+        """
+        Describe this image in detail as if you were describing it to a blind person, with a focus on obstacles that may be dangerous. Include:
+        1. The main objects and people in the foreground and their relative positions in frame
+        2. With any main obstacles, point out approximately where they would be in relation to the camera, such that the user would know how to avoid it.
+        3. If there is any text denoting certain hazards to look out for, point that out.
+
+        Be descriptive and specific, but also very concise, keeping at most 30 words, focusing on visual details that would help a visually impaired person understand what is happening in the image.
+        
+        For example: "There is a large pole approximately slightly to your left. There is a step down approximately 2 feet in front of you. There is a sign on the wall to your right that says 'Caution: Wet Floor'.
+        
+        or
+        
+        "You are facing a street. There is a curb approximately 3 feet in front of you. Slightly to your right, there is a parked car."
+        
+        "
         """
     ]
     if index < 0 or index >= len(prompts_list):
