@@ -3,7 +3,7 @@ import time
 from threading import Timer
 
 class Button:
-    def __init__(self, pin, click_callback=None, hold_callback=None, hold_time=1.0, bounce_time=200):
+    def __init__(self, pin, click_callback=None, hold_callback=None, hold_time=1.0, bounce_time=20):
         """
         Initialize button with callbacks for click and hold events.
         
@@ -27,7 +27,7 @@ class Button:
         
         # Setup GPIO
         GPIO.setmode(GPIO.BCM)
-        GPIO.setup(self.pin, GPIO.IN, pull_up_down=GPIO.PUD_UP)
+        GPIO.setup(self.pin, GPIO.IN)
         
         # Add event detection
         GPIO.add_event_detect(
@@ -39,12 +39,21 @@ class Button:
     
     def _button_state_changed(self, channel):
         print("button state changed")
-        if GPIO.input(self.pin) == GPIO.LOW:
-            # Button pressed
-            self._button_pressed()
-        else:
-            # Button released
-            self._button_released()
+        GPIO.remove_event_detect(self.pin)
+        try:
+            if GPIO.input(self.pin) == GPIO.LOW:
+                # Button pressed
+                self._button_pressed()
+            else:
+                # Button released
+                self._button_released()
+        finally:
+            GPIO.add_event_detect(
+                self.pin,
+                GPIO.BOTH,
+                callback=self._button_state_changed,
+                bouncetime=self.bounce_time
+            )
     
     def _button_pressed(self):
         print("button pressed")
