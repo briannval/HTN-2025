@@ -102,4 +102,5 @@ if __name__ == "__main__":
     except KeyboardInterrupt:
         print("\nExiting...")
     finally:
-        button.cleanup()
+        if button:
+            button.cleanup()
