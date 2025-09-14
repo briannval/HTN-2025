@@ -3,6 +3,7 @@ from typing import Optional
 from picamera2 import Picamera2, Preview
 import time
 import os
+from libcamera import Transform
 
 
 class PiCameraManager:
@@ -16,7 +17,7 @@ class PiCameraManager:
             os.makedirs(self.save_dir, exist_ok=True)
             self.cam = Picamera2()
 
-            camera_config = self.cam.create_preview_configuration()
+            camera_config = self.cam.create_preview_configuration(transform=Transform(hfli=True))
             self.cam.configure(camera_config)
 
             # try:
