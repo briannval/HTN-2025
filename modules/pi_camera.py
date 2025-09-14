@@ -62,3 +62,16 @@ class PiCameraManager:
             print(f"Error analyzing image: {e}")
             return self.saved_photo_path, None
 
+    # Returns the description if successful or an error message if not
+    def take_and_analyze_photo(self, cohere_analyzer) -> str:
+        if self.take_photo():
+            _, description = self.analyze_photo(cohere_analyzer)
+
+            if not description:
+                return "Photo analysis failed"
+
+            return description
+        else:
+            return "Failed to take photo"
+
+
