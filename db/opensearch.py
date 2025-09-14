@@ -15,7 +15,7 @@ class OpenSearchClient:
         self.aws_secret_key = os.getenv("AWS_SECRET_ACCESS_KEY")
         self.region = "us-east-2"
         self.host = os.getenv("OPENSEARCH_HOST")
-        self.index_name = "my-index"
+        self.index_name = "hack-the-north"
 
         awsauth = AWS4Auth(self.aws_access_key, self.aws_secret_key, self.region, "es")
 
@@ -45,6 +45,7 @@ class OpenSearchClient:
         return response
 
     def search_by_vector(self, query_embedding, size=10):
+        print(len(query_embedding))
         search_body = {
             "size": size,
             "query": {"knn": {"embedding": {"vector": query_embedding, "k": size}}},
@@ -88,5 +89,5 @@ class OpenSearchClient:
 if __name__ == "__main__":
     opensearch_client = OpenSearchClient()
     query = input("Enter your query: ")
-    res = opensearch_client.search_by_vector(generate_embedding(query))
+    res = opensearch_client.search_by_text(query)
     print(res)

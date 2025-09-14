@@ -190,6 +190,6 @@ class DynamoDBInterface:
 if __name__ == "__main__":
     db = DynamoDBInterface()
     time = datetime.now().isoformat()
-    location = "Toronto, ON"
-    description = "Test entry"
+    location = "Jupiter, US"
+    description = "Test Vector >>>>>>>>>>>>>"
     db.add_entry(time, location, description)
