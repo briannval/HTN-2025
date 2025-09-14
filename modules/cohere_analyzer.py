@@ -48,10 +48,10 @@ def cohere_prompt(index: int) -> str:
         Describe this image in a short, factual way to help a visually impaired person. 
         Focus on obstacles and hazards. Use at most 30 words.
 
-        Include:
-        1. Main objects or people in the foreground and their relative positions.  
-        2. Any obstacles, with approximate distance and direction from the camera.  
-        3. Any visible hazard text or warning signs.
+        Include, prioritizing the following in order based on severity of hazard:
+        1. Any visible hazard text or warning signs.
+        2. Main objects or people in the foreground and their relative positions.  
+        3. Any obstacles, with approximate distance and direction from the camera.  
         4. Any useful information that can help the visually impaired person understand the environment.
 
         Useful clear patterns could be (it is not required to follow these patterns or use all of them):  
