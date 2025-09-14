@@ -63,8 +63,8 @@ class Location:
             regular_address = location.get("address", "N/A")
             detailed_address = cls.get_address_from_coordinates(lat, lng)
 
-            if detailed_address and detailed_address != regular_address:
-                return f"Regular Address: {regular_address}, Detailed Address: {detailed_address}"
+            if detailed_address:
+                return f"Address: {detailed_address}"
             else:
                 return f"Address: {regular_address}"
         return "Unable to determine current location."
