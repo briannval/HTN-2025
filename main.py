@@ -25,7 +25,7 @@ class Main:
         dotenv.load_dotenv()
         self.cohere_api_key = os.getenv("COHERE_API_KEY")
         if not self.cohere_api_key:
-            logger.error("COHERE_API_KEY environment variable not set. Exiting.")
+            print("COHERE_API_KEY environment variable not set. Exiting.")
             exit(1)
 
         self.cohere_analyzer = CohereImageAnalyzer(self.cohere_api_key, prompt_index)
@@ -39,16 +39,16 @@ class Main:
             raise RuntimeError("Failed to start camera. Exiting.")
         # TODO INTEGRATE BUTTON
         # one click for snapshot, two for remember
-        logger.info("Taking snapshot")
+        print("Taking snapshot")
         snapshotResult = self.snapshot()
-        logger.info("Remembering snapshot")
+        print("Remembering snapshot")
         self.remember(snapshotResult)
 
         question = input("Ask a question: ")
         self.ask(question)
 
         """
-        logger.info("Listening for query")
+        print("Listening for query")
         self.query_listen()
         """
 
@@ -61,17 +61,17 @@ class Main:
                 ),
             )
 
-            logger.info(f"Answer: {answer}")
+            print(f"Answer: {answer}")
             speak(answer)
         except Exception as e:
-            logger.error(f"Error asking question: {str(e)}")
+            print(f"Error asking question: {str(e)}")
 
     # Remember the description from a snapshot
     def remember(self, desc):
         try:
             self.add_to_db(desc)
         except PhotoError as e:
-            logger.error(f"Error taking photo: {str(e)}")
+            print(f"Error taking photo: {str(e)}")
             speak(e)
 
     # Take a snapshot and describe it
@@ -81,7 +81,7 @@ class Main:
             speak(snapshotResult)
             return snapshotResult
         except Exception as e:
-            logger.error(f"Error taking photo: {str(e)}")
+            print(f"Error taking photo: {str(e)}")
             speak(e)
 
     # Take snapshot and return its description
