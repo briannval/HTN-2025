@@ -60,7 +60,7 @@ class Main:
             snapshotResult = self.take_photo()
             speak(snapshotResult)
             return snapshotResult
-        except PhotoError as e:
+        except Exception as e:
             logger.error(f"Error taking photo: {str(e)}")
             speak(e)
 
