@@ -70,7 +70,7 @@ class PiCameraManager:
             if not description:
                 return "Photo analysis failed"
 
-            return description
+            return "Here's what I see: " + description
         else:
             return "Failed to take photo"
 
