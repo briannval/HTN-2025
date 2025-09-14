@@ -22,7 +22,7 @@ if __name__ == "__main__":
         connection_class=RequestsHttpConnection,
     )
 
-    index_name = "my-index"
+    index_name = "hack-the-north"
 
     # Delete index if it exists
     if client.indices.exists(index=index_name):
