@@ -2,6 +2,8 @@ import time
 
 import speech_recognition as sr
 
+from db.opensearch import OpenSearchClient
+from modules.cohere_answer import CohereAnswer
 from modules.speak import speak
 
 
@@ -47,7 +49,7 @@ def start_listening():
                         query = recognizer.recognize_google(query_audio).lower()
                         print(f"Query: {query}")
                         speak(f"Processing your query: {query}")
-                        # self.ask(query)
+                        ask(query)
                     except (
                         sr.UnknownValueError,
                         sr.WaitTimeoutError,
@@ -63,6 +65,22 @@ def start_listening():
             print(f"Could not request results; {e}")
         except sr.WaitTimeoutError:
             pass
+
+
+def ask(question):
+    try:
+        opensearch_client = OpenSearchClient()
+        answer = CohereAnswer().generate_contextual_answer(
+            question,
+            opensearch_client.get_search_by_text_results_prompt(
+                opensearch_client.search_by_text(question)
+            ),
+        )
+
+        print(f"Answer: {answer}")
+        speak(answer)
+    except Exception as e:
+        print(f"Error asking question: {str(e)}")
 
 
 if __name__ == "__main__":
