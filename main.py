@@ -1,21 +1,17 @@
-import argparse
 import datetime
 import logging
 import os
-from typing import Optional
 
 import dotenv
 
 from db.dynamo import DynamoDBInterface
 from db.opensearch import OpenSearchClient
-from debug.cohereFlow import cohereFlow
-from modules.camera import CameraManager, select_camera
-from modules.cohere_answer import CohereAnswer
 from modules.cohere_analyzer import CohereImageAnalyzer
+from modules.cohere_answer import CohereAnswer
+from modules.listen import listen_for_query
 from modules.location import Location
 from modules.pi_camera import PiCameraManager
 from modules.speak import speak
-from modules.listen import listen_for_query
 
 logger = logging.getLogger(__name__)
 
@@ -94,8 +90,6 @@ class Main:
         time = datetime.datetime.now().isoformat()
         location = Location.get_formatted_location()
         self.dynamo_db.add_entry(time, location, description)
-
-
 
 
 if __name__ == "__main__":
