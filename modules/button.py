@@ -38,6 +38,7 @@ class Button:
         )
     
     def _button_state_changed(self, channel):
+        print("button state changed")
         if GPIO.input(self.pin) == GPIO.LOW:
             # Button pressed
             self._button_pressed()
@@ -46,6 +47,7 @@ class Button:
             self._button_released()
     
     def _button_pressed(self):
+        print("button pressed")
         self.pressed_time = time.time()
         self.hold_event_sent = False
         
@@ -55,6 +57,7 @@ class Button:
             self.hold_timer.start()
     
     def _button_released(self):
+        print("button released")
         # Cancel hold timer if it's running
         if self.hold_timer:
             self.hold_timer.cancel()
