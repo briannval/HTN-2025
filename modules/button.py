@@ -56,6 +56,9 @@ class Button:
         self.pressed_time = time.time()
     
     def _button_released(self):
+        if self.pressed_time is None:
+            return
+
         press_duration = time.time() - self.pressed_time
         
         if press_duration < self.hold_time:
@@ -81,7 +84,7 @@ if __name__ == "__main__":
     try:
         # Initialize button on GPIO 25 with callbacks
         button = Button(
-            pin=25,
+            pin=16,
             click_callback=on_click,
             hold_callback=on_hold,
             hold_time=0.4
