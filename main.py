@@ -11,7 +11,6 @@ from db.dynamo import DynamoDBInterface
 from db.opensearch import OpenSearchClient
 from modules.cohere_analyzer import CohereImageAnalyzer
 from modules.cohere_answer import CohereAnswer
-from modules.listen import listen_for_query
 from modules.location import Location
 from modules.pi_camera import PiCameraManager
 from modules.speak import speak
@@ -38,9 +37,6 @@ class Main:
         self.opensearch_client = OpenSearchClient()
 
     def start(self):
-        if not self.camera_manager.start_camera():
-            raise RuntimeError("Failed to start camera. Exiting.")
-
         recognizer = sr.Recognizer()
         mic = sr.Microphone()
 
@@ -63,6 +59,8 @@ class Main:
                 print(f"Heard: {command}")
 
                 if "snapshot" in command:
+                    if not self.camera_manager.start_camera():
+                        raise RuntimeError("Failed to start camera. Exiting.")
                     print("Taking snapshot")
                     print("Snapshot command detected")
                     speak("Taking snapshot")
@@ -118,7 +116,7 @@ class Main:
             self.add_to_db(desc)
         except PhotoError as e:
             print(f"Error taking photo: {str(e)}")
-            speak(e)
+            speak(str(e))
 
     # Take a snapshot and describe it
     def snapshot(self):
@@ -128,7 +126,7 @@ class Main:
             return snapshotResult
         except PhotoError as e:
             print(f"Error taking photo: {str(e)}")
-            speak(e)
+            speak(str(e))
 
     # Take snapshot and return its description
     def take_photo(self) -> str:
