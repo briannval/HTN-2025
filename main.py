@@ -61,8 +61,8 @@ class Main:
                 ),
             )
 
-            speak(answer)
             logger.info(f"Answer: {answer}")
+            speak(answer)
         except Exception as e:
             logger.error(f"Error asking question: {str(e)}")
 
