@@ -62,3 +62,7 @@ class Location:
         if location:
             return f"Latitude: {location['lat']}, Longitude: {location['lng']}, Address: {location.get('address', 'N/A')}"
         return "Unable to determine current location."
+
+
+if __name__ == "__main__":
+    print(Location.get_formatted_location())
