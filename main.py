@@ -132,7 +132,7 @@ class Main:
     def take_photo(self) -> str:
         print("Taking photo")
         if self.camera_manager.take_photo():
-            speak("Photo taken successfully")
+            pass
         else:
             self.camera_manager.stop_camera()
             raise PhotoError("Failed to take photo")
