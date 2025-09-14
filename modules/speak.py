@@ -18,6 +18,6 @@ def _speak_sync(text):
 
 def speak(text):
     """Non-blocking speak function that runs in a background thread."""
-    thread = threading.Thread(target=_speak_sync, args=(text,), daemon=True)
+    thread = threading.Thread(target=_speak_sync, args=(text,))
     thread.start()
     return thread
