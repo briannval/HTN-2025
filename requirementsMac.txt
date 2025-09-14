@@ -19,6 +19,8 @@ filelock==3.19.1
 fsspec==2025.9.0
 future==1.0.0
 geocoder==1.38.1
+geographiclib==2.1
+geopy==2.4.1
 google-auth==2.40.3
 google-genai==1.36.0
 gTTS==2.5.4
@@ -91,7 +93,6 @@ pyobjc-framework-CoreWLAN==11.1
 pyobjc-framework-CryptoTokenKit==11.1
 pyobjc-framework-DataDetection==11.1
 pyobjc-framework-DeviceCheck==11.1
-pyobjc-framework-DeviceDiscoveryExtension==11.1
 pyobjc-framework-DictionaryServices==11.1
 pyobjc-framework-DiscRecording==11.1
 pyobjc-framework-DiscRecordingUI==11.1
@@ -106,7 +107,6 @@ pyobjc-framework-FileProvider==11.1
 pyobjc-framework-FileProviderUI==11.1
 pyobjc-framework-FinderSync==11.1
 pyobjc-framework-FSEvents==11.1
-pyobjc-framework-FSKit==11.1
 pyobjc-framework-GameCenter==11.1
 pyobjc-framework-GameController==11.1
 pyobjc-framework-GameKit==11.1
@@ -133,7 +133,6 @@ pyobjc-framework-LocalAuthenticationEmbeddedUI==11.1
 pyobjc-framework-MailKit==11.1
 pyobjc-framework-MapKit==11.1
 pyobjc-framework-MediaAccessibility==11.1
-pyobjc-framework-MediaExtension==11.1
 pyobjc-framework-MediaLibrary==11.1
 pyobjc-framework-MediaPlayer==11.1
 pyobjc-framework-MediaToolbox==11.1
@@ -175,7 +174,6 @@ pyobjc-framework-SearchKit==11.1
 pyobjc-framework-Security==11.1
 pyobjc-framework-SecurityFoundation==11.1
 pyobjc-framework-SecurityInterface==11.1
-pyobjc-framework-SecurityUI==11.1
 pyobjc-framework-SensitiveContentAnalysis==11.1
 pyobjc-framework-ServiceManagement==11.1
 pyobjc-framework-SharedWithYou==11.1
