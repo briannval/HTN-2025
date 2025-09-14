@@ -43,6 +43,24 @@ def cohere_prompt(index: int) -> str:
         "You are facing a street. There is a curb approximately 3 feet in front of you. Slightly to your right, there is a parked car."
         
         "
+        """,
+        """
+        Describe this image in a short, factual way to help a visually impaired person. 
+        Focus on obstacles and hazards. Use at most 30 words.
+
+        Include:
+        1. Main objects or people in the foreground and their relative positions.  
+        2. Any obstacles, with approximate distance and direction from the camera.  
+        3. Any visible hazard text or warning signs.
+        4. Any useful information that can help the visually impaired person understand the environment.
+
+        Useful clear patterns could be (it is not required to follow these patterns or use all of them):  
+        - "There is [object] [distance] [position]."  
+        - "You are facing [object]."  
+        - "A sign says: '[text]'."  
+        - "A person with '[text]' is to your [position]."
+
+        If unsure about an object, state your best guess clearly.
         """
     ]
     if index < 0 or index >= len(prompts_list):

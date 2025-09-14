@@ -19,7 +19,11 @@ class PiCameraManager:
             camera_config = self.cam.create_preview_configuration()
             self.cam.configure(camera_config)
 
-            self.cam.start_preview(Preview.QTGL)
+            try:
+                self.cam.start_preview(Preview.QTGL)
+            except Exception as e:
+                pass
+
             self.cam.start()
             return True
         except Exception as e:
@@ -28,7 +32,10 @@ class PiCameraManager:
 
     def stop_camera(self):
         if self.cam:
-            self.cam.stop_preview()
+            try:
+                self.cam.stop_preview()
+            except Exception as e:
+                pass
             self.cam.close()
             self.cam = None
 
