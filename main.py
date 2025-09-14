@@ -54,14 +54,15 @@ class Main:
 
     def ask(self, question):
         try:
-            speak(
-                self.cohere_answer.generate_contextual_answer(
-                    question,
-                    self.opensearch_client.get_search_by_text_results_prompt(
-                        self.opensearch_client.search_by_text(question)
-                    ),
-                )
+            answer = self.cohere_answer.generate_contextual_answer(
+                question,
+                self.opensearch_client.get_search_by_text_results_prompt(
+                    self.opensearch_client.search_by_text(question)
+                ),
             )
+
+            speak(answer)
+            logger.info(f"Answer: {answer}")
         except Exception as e:
             logger.error(f"Error asking question: {str(e)}")
 
