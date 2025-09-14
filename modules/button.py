@@ -58,32 +58,16 @@ class Button:
     def _button_pressed(self):
         print("button pressed")
         self.pressed_time = time.time()
-        self.hold_event_sent = False
-        
-        # Start hold timer
-        if self.hold_callback:
-            self.hold_timer = Timer(self.hold_time, self._hold_timeout)
-            self.hold_timer.start()
     
     def _button_released(self):
         print("button released")
-        # Cancel hold timer if it's running
-        if self.hold_timer:
-            self.hold_timer.cancel()
-            self.hold_timer = None
+        press_duration = time.time() - self.pressed_time
         
-        # If hold event wasn't sent and we have a click callback, trigger click
-        if not self.hold_event_sent and self.click_callback and self.pressed_time is not None:
-            press_duration = time.time() - self.pressed_time
+        if press_duration < self.hold_time:
             self.click_callback(press_duration)
-        
+        else:
+            self.hold_callback(press_duration)
         self.pressed_time = None
-        self.hold_event_sent = False
-    
-    def _hold_timeout(self):
-        if self.pressed_time is not None and self.hold_callback:
-            self.hold_event_sent = True
-            self.hold_callback(time.time() - self.pressed_time)
     
     def cleanup(self):
         """Clean up GPIO resources"""
