@@ -43,8 +43,27 @@ class Main:
         snapshotResult = self.snapshot()
         logger.info("Remembering snapshot")
         self.remember(snapshotResult)
+
+        question = input("Ask a question: ")
+        self.ask(question)
+
+        """
         logger.info("Listening for query")
         self.query_listen()
+        """
+
+    def ask(self, question):
+        try:
+            speak(
+                self.cohere_answer.generate_contextual_answer(
+                    question,
+                    self.opensearch_client.get_search_by_text_results_prompt(
+                        self.opensearch_client.search_by_text(question)
+                    ),
+                )
+            )
+        except Exception as e:
+            logger.error(f"Error asking question: {str(e)}")
 
     # Remember the description from a snapshot
     def remember(self, desc):
@@ -75,7 +94,6 @@ class Main:
 
         self.camera_manager.stop_camera()
         result = self.camera_manager.analyze_photo(self.cohere_analyzer)
-
         if result:
             return result
         else:
