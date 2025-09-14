@@ -39,15 +39,17 @@ class Main:
             raise RuntimeError("Failed to start camera. Exiting.")
         # TODO INTEGRATE BUTTON
         # one click for snapshot, two for remember
-        self.snapshot()
-        self.remember()
-        # Hold to listen for query
+        logger.info("Taking snapshot")
+        snapshotResult = self.snapshot()
+        logger.info("Remembering snapshot")
+        self.remember(snapshotResult)
+        logger.info("Listening for query")
         self.query_listen()
 
     # Take a snapshot and remember the details
-    def remember(self):
+    def remember(self, desc):
         try:
-            self.add_to_db(self.take_photo())
+            self.add_to_db(desc)
         except PhotoError as e:
             logger.error(f"Error taking photo: {str(e)}")
             speak(e)
