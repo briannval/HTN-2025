@@ -64,6 +64,11 @@ Run the application
   python main.py
 ```
 
+Silencing JACK logs
+```bash
+  python main.py 2> /dev/null
+```
+
 ## Contributors
 
 - Brian Adhitya 
