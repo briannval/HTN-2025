@@ -23,7 +23,7 @@ class PhotoError(Exception):
 
 
 class Main:
-    def __init__(self, prompt_index=2):
+    def __init__(self, prompt_index=3):
         dotenv.load_dotenv()
         self.cohere_api_key = os.getenv("COHERE_API_KEY")
         if not self.cohere_api_key:
