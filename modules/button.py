@@ -3,7 +3,7 @@ import time
 from threading import Timer
 
 class Button:
-    def __init__(self, pin, click_callback=None, hold_callback=None, hold_time=1.0, bounce_time=20):
+    def __init__(self, pin, click_callback=None, hold_callback=None, hold_time=0.4, bounce_time=20):
         """
         Initialize button with callbacks for click and hold events.
         
@@ -22,12 +22,10 @@ class Button:
         
         # Button state
         self.pressed_time = None
-        self.hold_event_sent = False
-        self.hold_timer = None
         
         # Setup GPIO
         GPIO.setmode(GPIO.BCM)
-        GPIO.setup(self.pin, GPIO.IN)
+        GPIO.setup(self.pin, GPIO.IN, pull_up_down=GPIO.PUD_UP)
         
         # Add event detection
         GPIO.add_event_detect(
@@ -38,10 +36,9 @@ class Button:
         )
     
     def _button_state_changed(self, channel):
-        print("button state changed")
         GPIO.remove_event_detect(self.pin)
         try:
-            if GPIO.input(self.pin) == GPIO.LOW:
+            if GPIO.input(self.pin) == GPIO.HIGH:
                 # Button pressed
                 self._button_pressed()
             else:
@@ -56,11 +53,9 @@ class Button:
             )
     
     def _button_pressed(self):
-        print("button pressed")
         self.pressed_time = time.time()
     
     def _button_released(self):
-        print("button released")
         press_duration = time.time() - self.pressed_time
         
         if press_duration < self.hold_time:
@@ -89,7 +84,7 @@ if __name__ == "__main__":
             pin=25,
             click_callback=on_click,
             hold_callback=on_hold,
-            hold_time=1.0  # 1 second to trigger hold
+            hold_time=0.4
         )
         
         print("Button test started. Press CTRL+C to exit.")
