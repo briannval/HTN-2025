@@ -60,8 +60,8 @@ def cohere_prompt(index: int) -> str:
         - "A sign says: '[text]'."  
         - "A person with '[text]' is to your [position]."
 
-        If unsure about an object, state your best guess clearly.
-        """
+        If unsure about an object, state your best guess clearly. Do not ask follow up questions.
+        """,
     ]
     if index < 0 or index >= len(prompts_list):
         index = 0
