@@ -86,6 +86,7 @@ def on_hold(hold_duration):
     print(f"Button held for {hold_duration:.2f} seconds!")
 
 if __name__ == "__main__":
+    button = None
     try:
         # Initialize button on GPIO 25 with callbacks
         button = Button(
