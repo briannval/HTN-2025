@@ -74,7 +74,7 @@ class OpenSearchClient:
     def get_search_by_text_results_prompt(self, response):
         return "\n".join(
             [
-                f"At {el["_source"]["time"]}, in {el["_source"]["location"]}, {el["_source"]["description"]}"
+                f'At {el["_source"]["time"]}, in {el["_source"]["location"]}, {el["_source"]["description"]}'
                 for el in response["hits"]["hits"]
             ]
         )
