@@ -17,7 +17,7 @@ class PiCameraManager:
             os.makedirs(self.save_dir, exist_ok=True)
             self.cam = Picamera2()
 
-            camera_config = self.cam.create_preview_configuration(transform=Transform(hfli=True))
+            camera_config = self.cam.create_preview_configuration(transform=Transform(vflip=True))
             self.cam.configure(camera_config)
 
             # try:
