@@ -17,7 +17,7 @@ def main():
     dotenv.load_dotenv()
     cohere_api_key = os.getenv("COHERE_API_KEY")
     if cohere_api_key:
-        cohere_analyzer = CohereImageAnalyzer(cohere_api_key, prompt_index=prompt_index)
+        cohere_analyzer = CohereImageAnalyzer(cohere_api_key, prompt_index=2)
     else:
         print("COHERE_API_KEY environment variable not set. Exiting.")
         return
