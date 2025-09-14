@@ -2,6 +2,22 @@
 
 ![Project Diagram](diagram/diagram.jpeg)
 
+## Hardware
+
+- ESP32
+- QNX
+- Raspberry Pi
+- Camera Module 3
+- Arduino
+
+## Technologies
+
+- AWS DynamoDB
+- AWS Bedrock
+- AWS Lambda
+- AWS OpenSearch
+- Cohere Aya Vision
+- gTTS
 
 ## Setting up
 
