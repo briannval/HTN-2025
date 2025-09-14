@@ -1,3 +1,5 @@
+from typing import Optional
+
 from picamera2 import Picamera2, Preview
 import time
 import os
@@ -47,7 +49,7 @@ class PiCameraManager:
             print(f"Error taking photo: {e}")
             return False
 
-    def analyze_photo(self, cohere_analyzer):
+    def analyze_photo(self, cohere_analyzer) -> Optional[str]:
         if not self.saved_photo_path or not cohere_analyzer:
             return None
 
@@ -57,15 +59,15 @@ class PiCameraManager:
                 self.saved_photo_path
             )
             print(f"Image description: {description}")
-            return self.saved_photo_path, description
+            return description
         except Exception as e:
             print(f"Error analyzing image: {e}")
-            return self.saved_photo_path, None
+            return None
 
     # Returns the description if successful or an error message if not
     def take_and_analyze_photo(self, cohere_analyzer) -> str:
         if self.take_photo():
-            _, description = self.analyze_photo(cohere_analyzer)
+            description = self.analyze_photo(cohere_analyzer)
 
             if not description:
                 return "Photo analysis failed"

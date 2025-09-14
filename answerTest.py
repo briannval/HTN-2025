@@ -1,6 +1,6 @@
 from db.opensearch import OpenSearchClient
 from modules.cohere_answer import CohereAnswer
-
+from modules.listen import listen_for_query
 
 def answerTest():
     opensearch_client = OpenSearchClient()

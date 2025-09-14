@@ -43,7 +43,7 @@ def main():
         return
 
     camera_manager.stop_camera()
-    photo_path, description = camera_manager.analyze_photo(cohere_analyzer)
+    description = camera_manager.analyze_photo(cohere_analyzer)
 
     if description:
         speak("Here's what I see in the image:")

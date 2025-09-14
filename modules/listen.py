@@ -10,6 +10,41 @@ def list_microphone_names():
     print(sr.Microphone.list_microphone_names())
 
 
+# Listen for query while button is activated?
+def listen_for_query(is_activated) -> str:
+    recognizer = sr.Recognizer()
+    mic = sr.Microphone()
+
+    with mic as source:
+        speak("Adjusting for ambient noise... Please wait.")
+        recognizer.adjust_for_ambient_noise(source)
+
+    speak("Listening for your query...")
+
+    while is_activated:
+        with mic as source:
+            # Listen for the first phrase and extract it into audio data
+            try:
+                audio = recognizer.listen(source, timeout=5)
+            except sr.WaitTimeoutError:
+                speak("Sorry, I didn't hear anything. Please try again.")
+                continue
+
+        try:
+            command = recognizer.recognize_google(audio).lower()
+            print(f"Heard: {command}")
+
+            if command:
+                return command
+
+        except sr.UnknownValueError:
+            pass
+        except sr.RequestError as e:
+            logger.error(f"Could not request results; {e}")
+        except sr.WaitTimeoutError:
+            pass
+
+
 def listen_for_snapshot_pi(camera_manager, cohere_analyzer):
     recognizer = sr.Recognizer()
     mic = sr.Microphone()

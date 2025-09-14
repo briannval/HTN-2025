@@ -1,60 +1,103 @@
 import argparse
+import datetime
 import logging
 import os
+from typing import Optional
 
 import dotenv
 
-logger = logging.getLogger(__name__)
-
+from db.dynamo import DynamoDBInterface
+from db.opensearch import OpenSearchClient
 from debug.cohereFlow import cohereFlow
 from modules.camera import CameraManager, select_camera
-from modules.listen import list_microphone_names, listen_for_snapshot
+from modules.cohere_answer import CohereAnswer
+from modules.cohere_analyzer import CohereImageAnalyzer
+from modules.location import Location
+from modules.pi_camera import PiCameraManager
+from modules.speak import speak
+from modules.listen import listen_for_query
+
+logger = logging.getLogger(__name__)
 
 
-def parse_args():
-    parser = argparse.ArgumentParser(description="")
-    parser.add_argument("--DEBUG_COHERE", action="store_true")
-    return parser.parse_args()
+class PhotoError(Exception):
+    pass
+
+
+class Main:
+    def __init__(self, prompt_index=2):
+        dotenv.load_dotenv()
+        self.cohere_api_key = os.getenv("COHERE_API_KEY")
+        if not self.cohere_api_key:
+            logger.error("COHERE_API_KEY environment variable not set. Exiting.")
+            exit(1)
+
+        self.cohere_analyzer = CohereImageAnalyzer(self.cohere_api_key, prompt_index)
+        self.cohere_answer = CohereAnswer()
+        self.camera_manager = PiCameraManager()
+        self.dynamo_db = DynamoDBInterface()
+        self.opensearch_client = OpenSearchClient()
+
+    def start(self):
+        if not self.camera_manager.start_camera():
+            raise RuntimeError("Failed to start camera. Exiting.")
+        # TODO INTEGRATE BUTTON
+        # one click for snapshot, two for remember
+        self.snapshot()
+        self.remember()
+        # Hold to listen for query
+        self.query_listen()
+
+    # Take a snapshot and remember the details
+    def remember(self):
+        try:
+            self.add_to_db(self.take_photo())
+        except PhotoError as e:
+            logger.error(f"Error taking photo: {str(e)}")
+            speak(e)
+
+    # Take a snapshot and describe it
+    def snapshot(self):
+        try:
+            speak(self.take_photo())
+        except PhotoError as e:
+            logger.error(f"Error taking photo: {str(e)}")
+            speak(e)
+
+    # Take snapshot and return its description
+    def take_photo(self) -> str:
+        print("Taking photo")
+        if self.camera_manager.take_photo():
+            speak("Photo taken successfully")
+        else:
+            self.camera_manager.stop_camera()
+            raise PhotoError("Failed to take photo")
+
+        self.camera_manager.stop_camera()
+        result = self.camera_manager.analyze_photo(self.cohere_analyzer)
+
+        if result:
+            return result
+        else:
+            raise PhotoError("Photo analysis failed")
+
+    def query_listen(self):
+        # Just keep listening for now
+        # TODO: Integrate with button
+        query = listen_for_query(True)
+        res = self.opensearch_client.search_by_text(query)
+        res_prompt = self.opensearch_client.get_search_by_text_results_prompt(res)
+        cohere_answer = CohereAnswer()
+        speak(cohere_answer.generate_contextual_answer(query, res_prompt))
+
+    def add_to_db(self, description: str):
+        time = datetime.datetime.now().isoformat()
+        location = Location.get_formatted_location()
+        self.dynamo_db.add_entry(time, location, description)
+
+
 
 
 if __name__ == "__main__":
-    dotenv.load_dotenv()
-    args = parse_args()
-
-    """
-    logger.info("Available microphones:")
-    list_microphone_names()
-
-    camera_index = select_camera()
-    if camera_index is None:
-        logger.error("No camera selected. Exiting.")
-        exit()
-    """
-
-    cohere_api_key = os.getenv("COHERE_API_KEY")
-    if not cohere_api_key:
-        logger.warning(
-            "Warning: COHERE_API_KEY environment variable not set. Image analysis will not be available."
-        )
-        logger.info("To enable image analysis, set your Cohere API key:")
-        logger.info("export COHERE_API_KEY='your_api_key_here'")
-    else:
-        logger.info("Cohere API key found. Image analysis will be available.")
-
-    """
-    camera_manager = CameraManager(camera_index, cohere_api_key=cohere_api_key)
-    if not camera_manager.start_camera():
-        logger.error("Failed to start camera. Exiting.")
-        exit()
-    """
-
-    try:
-        cohereFlow()
-        """
-        if args.DEBUG_COHERE:
-            cohereFlow(camera_manager)
-        else:
-            listen_for_snapshot(camera_manager)  # TODO
-        """
-    except KeyboardInterrupt:
-        logger.info("\nShutting down...")
+    main = Main()
+    main.start()
