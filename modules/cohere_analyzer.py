@@ -58,7 +58,7 @@ class CohereImageAnalyzer:
         try:
             image_base64 = self.encode_image_to_base64(image_path)
 
-            prompt = cohere_prompt(prompt_number)
+            prompt = cohere_prompt(self.prompt_index)
 
             response = self.client.chat(
                 model=self.model,
