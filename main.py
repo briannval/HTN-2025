@@ -46,7 +46,7 @@ class Main:
         logger.info("Listening for query")
         self.query_listen()
 
-    # Take a snapshot and remember the details
+    # Remember the description from a snapshot
     def remember(self, desc):
         try:
             self.add_to_db(desc)
@@ -57,7 +57,9 @@ class Main:
     # Take a snapshot and describe it
     def snapshot(self):
         try:
-            speak(self.take_photo())
+            snapshotResult = self.take_photo()
+            speak(snapshotResult)
+            return snapshotResult
         except PhotoError as e:
             logger.error(f"Error taking photo: {str(e)}")
             speak(e)
